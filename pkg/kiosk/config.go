@@ -8,6 +8,8 @@ type Config struct {
 		LXDEHome       string `yaml:"lxde-home" env:"KIOSK_LXDE_HOME" env-default:"/home/pi" env-description:"path to home directory of LXDE user running X Server"`
 		Mode           string `yaml:"kiosk-mode" env:"KIOSK_MODE" env-default:"full" env-description:"[full|tv|disabled]"`
 		WindowPosition string `yaml:"window-position" env:"KIOSK_WINDOW_POSITION" env-default:"0,0" env-description:"Top Left Position of Kiosk"`
+		SettingPath    string `yaml:"setting-path" env:"KIOSK_SETTING_PATH" env-default:"" env-description:"path to settings directory"`
+		Selector       string `yaml:"selector" env:"KIOSK_SELECTOR" env-default:"#reactRoot > div.grafana-app > main" env-description:"selector to use for finding the target element"`
 	} `yaml:"general"`
 	Target struct {
 		IgnoreCertificateErrors bool   `yaml:"ignore-certificate-errors" env:"KIOSK_IGNORE_CERTIFICATE_ERRORS" env-description:"ignore SSL/TLS certificate errors" env-default:"false"`

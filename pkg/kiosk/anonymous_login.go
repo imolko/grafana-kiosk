@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/chromedp/cdproto/target"
 	"github.com/chromedp/chromedp"
 )
 
@@ -17,6 +18,13 @@ func GrafanaKioskAnonymous(cfg *Config) {
 		panic(err)
 	}
 	defer os.RemoveAll(dir)
+
+	if cfg.General.SettingPath != "" {
+		err = CopyFolder(cfg.General.SettingPath, dir)
+		if err != nil {
+			panic(err)
+		}
+	}
 
 	opts := []chromedp.ExecAllocatorOption{
 		chromedp.NoFirstRun,
@@ -54,17 +62,39 @@ func GrafanaKioskAnonymous(cfg *Config) {
 
 	var generatedURL = GenerateURL(cfg.Target.URL, cfg.General.Mode, cfg.General.AutoFit, cfg.Target.IsPlayList)
 	log.Println("Navigating to ", generatedURL)
+
+	eventCtx, cancelEvent := context.WithCancel(taskCtx)
+	defer cancelEvent()
+
+	chromedp.ListenTarget(eventCtx, func(ev interface{}) {
+		if ev, ok := ev.(*target.EventTargetInfoChanged); ok {
+			log.Println("Location Changed to ", ev.TargetInfo.URL)
+		}
+	})
+
 	/*
 		Launch chrome and look for main-view element
 	*/
+	var urlDashboard string
 	if err := chromedp.Run(taskCtx,
 		chromedp.Navigate(generatedURL),
-		chromedp.WaitVisible(`//div[@class="main-view"]`, chromedp.BySearch),
+		chromedp.WaitVisible(cfg.General.Selector, chromedp.BySearch),
+		chromedp.Location(&urlDashboard),
+	); err != nil {
+		panic(err)
+	}
+
+	// Activamos modo Kiosk
+	log.Printf("Navigated to %s\n", urlDashboard)
+	if err := chromedp.Run(taskCtx,
+		chromedp.Navigate(GenerateURL(urlDashboard, cfg.General.Mode, cfg.General.AutoFit, cfg.Target.IsPlayList)),
+		chromedp.WaitVisible(cfg.General.Selector, chromedp.BySearch),
 		// wait forever (for now)
 		chromedp.WaitVisible("notinputPassword", chromedp.ByID),
 	); err != nil {
 		panic(err)
 	}
+
 	log.Println("Sleep before exit...")
 	// wait here for the process to exit
 	time.Sleep(2000 * time.Millisecond)

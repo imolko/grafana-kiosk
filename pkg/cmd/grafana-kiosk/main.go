@@ -30,6 +30,8 @@ type Args struct {
 	UsernameField           string
 	PasswordField           string
 	WindowPosition          string
+	SettingPath             string
+	Selector                string
 }
 
 // ProcessArgs processes and handles CLI arguments
@@ -44,6 +46,8 @@ func ProcessArgs(cfg interface{}) Args {
 	f.StringVar(&a.Mode, "kiosk-mode", "full", "Kiosk Display Mode [full|tv|disabled]\nfull = No TOPNAV and No SIDEBAR\ntv = No SIDEBAR\ndisabled = omit option\n")
 	f.StringVar(&a.URL, "URL", "https://play.grafana.org", "URL to Grafana server")
 	f.StringVar(&a.WindowPosition, "window-position", "0,0", "Top Left Position of Kiosk")
+	f.StringVar(&a.SettingPath, "setting-path", "", "Path to settings folder")
+	f.StringVar(&a.Selector, "selector", "#reactRoot > div.grafana-app > main", "Selector to use for finding the target element")
 	f.BoolVar(&a.IsPlayList, "playlists", false, "URL is a playlist")
 	f.BoolVar(&a.AutoFit, "autofit", true, "Fit panels to screen")
 	f.BoolVar(&a.LXDEEnabled, "lxde", false, "Initialize LXDE for kiosk mode")
@@ -96,6 +100,8 @@ func summary(cfg *kiosk.Config) {
 	log.Println("LXDEHome:", cfg.General.LXDEHome)
 	log.Println("Mode:", cfg.General.Mode)
 	log.Println("WindowPosition:", cfg.General.WindowPosition)
+	log.Println("SettingPath:", cfg.General.SettingPath)
+	log.Println("Selector:", cfg.General.Selector)
 	// target
 	log.Println("URL:", cfg.Target.URL)
 	log.Println("LoginMethod:", cfg.Target.LoginMethod)
@@ -140,6 +146,8 @@ func main() {
 		cfg.General.LXDEHome = args.LXDEHome
 		cfg.General.Mode = args.Mode
 		cfg.General.WindowPosition = args.WindowPosition
+		cfg.General.SettingPath = args.SettingPath
+		cfg.General.Selector = args.Selector
 		//
 		cfg.GOAUTH.AutoLogin = args.OauthAutoLogin
 		cfg.GOAUTH.UsernameField = args.UsernameField

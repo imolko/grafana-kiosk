@@ -19,6 +19,13 @@ func GrafanaKioskLocal(cfg *Config) {
 	}
 	defer os.RemoveAll(dir)
 
+	if cfg.General.SettingPath != "" {
+		err = CopyFolder(cfg.General.SettingPath, dir)
+		if err != nil {
+			panic(err)
+		}
+	}
+
 	opts := []chromedp.ExecAllocatorOption{
 		chromedp.NoFirstRun,
 		chromedp.NoDefaultBrowserCheck,
